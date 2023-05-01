@@ -17,5 +17,5 @@ jobs:
       run: |
         git remote add upstream https://github.com/benphelps/homepage.git
         git fetch upstream
-        git merge --no-edit upstream/main
+        git cherry-pick 04d328c
         git push origin HEAD
