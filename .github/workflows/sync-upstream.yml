@@ -1,0 +1,21 @@
+name: Sync with upstream on release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        ref: upstream/main # Replace with the name of the upstream branch you want to sync with
+        fetch-depth: 0
+    - name: Sync with upstream
+      run: |
+        git remote add upstream https://github.com/benphelps/homepage.git
+        git fetch upstream
+        git merge --no-edit upstream/main
+        git push origin HEAD
