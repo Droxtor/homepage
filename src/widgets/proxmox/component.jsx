@@ -22,6 +22,7 @@ export default function Component({ service }) {
   if (!clusterData || !clusterData.data) {
     return (
       <Container service={service}>
+        <Block label="proxmox.node" />
         <Block label="proxmox.vms" />
         <Block label="proxmox.lxc" />
         <Block label="resources.cpu" />
@@ -31,23 +32,24 @@ export default function Component({ service }) {
   }
 
   const { data } = clusterData ;
-  const vms = data.filter(item => item.type === "qemu" && item.template === 0) || [];
-  const lxc = data.filter(item => item.type === "lxc" && item.template === 0) || [];
-  const nodes = data.filter(item => item.type === "node") || [];
-
-  const runningVMs = vms.reduce(calcRunning, 0);
-  const runningLXC = lxc.reduce(calcRunning, 0);
-
-  // TODO: support more than one node
-  // TODO: better handling of cluster with zero nodes
-  const node = nodes.length > 0 ? nodes[0] : { cpu: 0.0, mem: 0, maxmem: 0 };
+  const nodes = data.filter(item => item.type === "node").sort((a, b) => a.node.localeCompare(b.node));
 
   return (
-    <Container service={service}>
-      <Block label="proxmox.vms" value={`${runningVMs} / ${vms.length}`} />
-      <Block label="proxmox.lxc" value={`${runningLXC} / ${lxc.length}`} />
-      <Block label="resources.cpu" value={t("common.percent", { value: (node.cpu * 100) })} />
-      <Block label="resources.mem" value={t("common.percent", { value: ((node.mem / node.maxmem) * 100) })} />
-    </Container>
+    <>
+      {nodes.map(node => {
+        const qemu = data.filter(item => item.type === "qemu" && item.node === node.node && item.template === 0);
+        const lxc = data.filter(item => item.type === "lxc" && item.node === node.node && item.template === 0);
+  
+        return (
+          <Container key={node.node} service={service}>
+            <Block label="proxmox.node" value={t(node.node)} />
+            <Block label="proxmox.vms" value={`${qemu.reduce(calcRunning, 0)} / ${qemu.length}`} />
+            <Block label="proxmox.lxc" value={`${lxc.reduce(calcRunning, 0)} / ${lxc.length}`} />
+            <Block label="resources.cpu" value={t("common.percent", { value: (node.cpu * 100) })} />
+            <Block label="resources.mem" value={t("common.percent", { value: ((node.mem / node.maxmem) * 100) })} />
+          </Container>
+        );
+      })}
+    </>
   );
 }

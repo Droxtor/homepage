@@ -308,6 +308,7 @@
         "failedLoginsLast24H": "Failed Logins (24h)"
     },
     "proxmox": {
+        "node": "Node",
         "mem": "MEM",
         "cpu": "CPU",
         "lxc": "LXC",
